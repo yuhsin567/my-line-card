@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位名片中控台 (全端一鍵分享穩定版)</title>
+    <title>數位名片中控台 (跨端終極穩定版)</title>
+    <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -93,25 +94,51 @@
             border-top: 1px solid #eee;
             padding-top: 10px;
         }
+        
+        /* 彈出提示視窗樣式 */
+        .toast {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2b8a3e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { top: 0; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
     </style>
 </head>
 <body>
+
+<!-- 頂部彈出提示 -->
+<div class="toast" id="toastBox">📋 名片網址已複製！快去 LINE 貼上分享吧！</div>
 
 <div class="container">
     <div class="logo">🪪</div>
     <h1>我的數位名片中控台</h1>
     <p class="subtitle">請選擇您要分享的名片樣式：</p>
     
+    <!-- 名片選項 1：垣宣科技 Avon -->
     <div class="card-option">
         <div class="card-title">💼 垣宣科技 | Avon 總監</div>
-        <div class="card-desc">官方商兼名片（手機端直接發送雙頁卡片，電腦端一鍵喚起 LINE 轉發）。</div>
-        <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard('avon')" disabled>🚀 一鍵傳送商務名片</button>
+        <div class="card-desc">官方商務名片 (手機端直接傳送雙頁卡片，電腦端一鍵複製分享連結)。</div>
+        <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard('avon')" disabled>🚀 一鍵分享商務名片</button>
     </div>
     
+    <!-- 名片選項 2：過失超重 個人名片 -->
     <div class="card-option">
         <div class="card-title">☕ 過失超重 | 個人社交名片</div>
-        <div class="card-desc">輕鬆的私人日常名片，單頁格式，全平台支援一鍵分享。</div>
-        <button class="btn-send btn-social" id="btnSocial" onclick="shareCard('social')" disabled>🚀 一鍵傳送社交名片</button>
+        <div class="card-desc">輕鬆的私人日常名片，單頁格式，全平台穩定支援分享。</div>
+        <button class="btn-send btn-social" id="btnSocial" onclick="shareCard('social')" disabled>🚀 一鍵分享社交名片</button>
     </div>
     
     <div class="status" id="statusMsg">系統初始化中...</div>
@@ -129,7 +156,8 @@
                     updateStatus('🟢 LINE 手機版連線成功');
                 } else {
                     isMobileEnv = false;
-                    updateStatus('🟢 LINE 電腦版相容模式已就緒');
+                    updateStatus('🟢 LINE 電腦相容模式已就緒');
+                    changeButtonTextForPC();
                 }
                 enableButtons();
                 if (liff.isInClient() && !liff.isLoggedIn()) {
@@ -139,6 +167,7 @@
             .catch((err) => {
                 isMobileEnv = false;
                 updateStatus('🟢 瀏覽器相容模式已就緒');
+                changeButtonTextForPC();
                 enableButtons();
             });
     });
@@ -148,12 +177,25 @@
         document.getElementById('btnSocial').disabled = false;
     }
 
+    function changeButtonTextForPC() {
+        document.getElementById('btnAvon').innerText = '📋 一鍵複製商務名片網址';
+        document.getElementById('btnSocial').innerText = '📋 一鍵複製社交名片網址';
+    }
+
     function updateStatus(msg) {
         document.getElementById('statusMsg').innerText = msg;
     }
 
+    function showToast() {
+        const toast = document.getElementById('toastBox');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
     function shareCard(type) {
-        // 📱 如果是手機 LINE App，執行最完美的原生 Flex 卡片好友挑選器
+        // 📱 手機環境：完美呼叫 LINE 原生好友選擇器發送 Flex 大卡片
         if (isMobileEnv) {
             updateStatus('⏳ 正在開啟手機好友選擇清單...');
             
@@ -261,16 +303,17 @@
             })
             .catch((err) => { updateStatus('❌ 發送失敗：' + err.message); });
         } 
-        // 💻 如果是電腦版，直接啟動最乾淨的純網址轉發模式（絕不跳掉、絕對成功）
+        // 💻 電腦環境：放棄不穩定的跳轉，直接一鍵複製網址到剪貼簿，保證百分之百穩定！
         else {
-            updateStatus('⏳ 正在喚起電腦版 LINE 分享功能...');
+            const name = (type === 'avon') ? 'Avon 徐雅芳總監' : '過失超重';
+            const shareText = `您好！這是我的數位名片（${name}），請多指教：\nhttps://liff.line.me/${MY_LIFF_ID}`;
             
-            // 直接分享你的名片中控台網址，乾淨、不超標、絕對不跳掉！
-            const targetUrl = `https://liff.line.me/${MY_LIFF_ID}`;
-            const pcShareUrl = `https://line.me/R/share?text=${encodeURIComponent('您好！這是我的數位名片，請多指教：\n' + targetUrl)}`;
-            
-            window.open(pcShareUrl, '_blank');
-            updateStatus('🟢 已成功喚起電腦版 LINE 分享！');
+            navigator.clipboard.writeText(shareText).then(() => {
+                showToast();
+                updateStatus('🟢 網址複製成功！快去 LINE 聊天室貼上吧！');
+            }).catch((err) => {
+                alert('複製失敗，請手動複製網址。');
+            });
         }
     }
 </script>
