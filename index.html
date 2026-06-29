@@ -31,7 +31,7 @@
         .avatar-placeholder {
             width: 80px;
             height: 80px;
-            background-color: #06C755;
+            background-color: #004c48;
             color: white;
             font-size: 32px;
             font-weight: bold;
@@ -52,7 +52,7 @@
             margin: 0 0 25px;
         }
         .btn-send {
-            background-color: #06C755;
+            background-color: #004c48;
             color: white;
             border: none;
             padding: 14px 24px;
@@ -61,15 +61,12 @@
             border-radius: 25px;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 76, 72, 0.3);
             transition: all 0.2s ease;
         }
         .btn-send:hover {
-            background-color: #05b34c;
+            background-color: #003633;
             transform: translateY(-1px);
-        }
-        .btn-send:active {
-            transform: translateY(1px);
         }
         .status {
             margin-top: 15px;
@@ -82,8 +79,8 @@
 
 <div class="container">
     <div class="avatar-placeholder">🪪</div>
-    <h1>過失超重 數位名片分享器</h1>
-    <p>點擊下方按鈕，即可選擇 LINE 好友，以你個人名義直接發送精美的 Flex Message 數位名片！</p>
+    <h1>垣宣科技 數位名片分享器</h1>
+    <p>點擊下方按鈕選擇好友，即可將「Avon 的雙頁數位名片」以你個人帳號名義直接傳送出去！</p>
     
     <button class="btn-send" id="sendBtn" onclick="shareCard()">傳送數位名片</button>
     
@@ -91,10 +88,9 @@
 </div>
 
 <script>
-    // ⚠️ 請在這裡填入你在 LINE Developers 拿到的 LIFF ID
+    // ⚠️ 請記得在這裡貼上你在 LINE Developers 拿到的 LIFF ID
     const MY_LIFF_ID = '2010548408-hYUgnhWX'; 
 
-    // 初始化 LIFF
     document.addEventListener("DOMContentLoaded", function() {
         if (!MY_LIFF_ID || MY_LIFF_ID === 'YOUR_LIFF_ID_HERE') {
             updateStatus('❌ 請先在程式碼中設定你的 MY_LIFF_ID');
@@ -105,14 +101,12 @@
         liff.init({ liffId: MY_LIFF_ID })
             .then(() => {
                 updateStatus('🟢 LINE 系統連線成功，隨時可以分享');
-                // 如果沒登入，引導使用者登入
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 }
             })
             .catch((err) => {
                 updateStatus('❌ 系統初始化失敗: ' + err.message);
-                console.error(err);
             });
     });
 
@@ -120,9 +114,7 @@
         document.getElementById('statusMsg').innerText = msg;
     }
 
-    // 觸發分享功能
     function shareCard() {
-        // 檢查 shareTargetPicker 是否可用
         if (!liff.isApiAvailable('shareTargetPicker')) {
             alert('此帳號尚未開通 shareTargetPicker 權限，或不支援此環境發送。');
             return;
@@ -133,147 +125,174 @@
         liff.shareTargetPicker([
             {
                 "type": "flex",
-                "altText": "您收到了一張數位名片",
+                "altText": "垣宣科技|Avon的數位名片",
                 "contents": {
-                  "type": "bubble",
-                  "body": {
-                    "type": "box",
-                    "layout": "vertical",
+                    "type": "carousel",
                     "contents": [
-                      {
-                        "type": "text",
-                        "text": "過失超重",
-                        "weight": "bold",
-                        "color": "#1DB446",
-                        "size": "sm"
-                      },
-                      {
-                        "type": "text",
-                        "text": "您的名字 / 職稱",
-                        "weight": "bold",
-                        "size": "xxl",
-                        "margin": "md"
-                      },
-                      {
-                        "type": "text",
-                        "text": "過失超重的日常 工作室",
-                        "size": "xs",
-                        "color": "#aaaaaa",
-                        "wrap": true
-                      },
-                      {
-                        "type": "separator",
-                        "margin": "xxl"
-                      },
-                      {
-                        "type": "box",
-                        "layout": "vertical",
-                        "margin": "xxl",
-                        "spacing": "sm",
-                        "contents": [
-                          {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                              {
-                                "type": "text",
-                                "text": "PHONE",
-                                "size": "xs",
-                                "color": "#aaaaaa",
-                                "flex": 3
-                              },
-                              {
-                                "type": "text",
-                                "text": "0912-345-678",
-                                "size": "xs",
-                                "color": "#666666",
-                                "flex": 9,
-                                "wrap": true
-                              }
-                            ]
-                          },
-                          {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                              {
-                                "type": "text",
-                                "text": "EMAIL",
-                                "size": "xs",
-                                "color": "#aaaaaa",
-                                "flex": 3
-                              },
-                              {
-                                "type": "text",
-                                "text": "hello@example.com",
-                                "size": "xs",
-                                "color": "#666666",
-                                "flex": 9,
-                                "wrap": true
-                              }
-                            ]
-                          },
-                          {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                              {
-                                "type": "text",
-                                "text": "LINE",
-                                "size": "xs",
-                                "color": "#aaaaaa",
-                                "flex": 3
-                              },
-                              {
-                                "type": "text",
-                                "text": "@your_line_id",
-                                "size": "xs",
-                                "color": "#666666",
-                                "flex": 9,
-                                "wrap": true
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "type": "separator",
-                        "margin": "xxl"
-                      },
-                      {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "margin": "md",
-                        "contents": [
-                          {
-                            "type": "button",
-                            "action": {
-                              "type": "uri",
-                              "label": "加入個人 LINE",
-                              "uri": "https://line.me/ti/p/你的個人LINE官方連結"
+                        {
+                            "type": "bubble",
+                            "hero": {
+                                "type": "image",
+                                "url": "https://i.imgur.com/9VOpTcB.png",
+                                "size": "full",
+                                "aspectRatio": "27:14",
+                                "aspectMode": "cover",
+                                "action": {
+                                    "type": "uri",
+                                    "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link"
+                                }
                             },
-                            "style": "primary",
-                            "color": "#06C755",
-                            "height": "sm"
-                          }
-                        ]
-                      }
+                            "body": {
+                                "type": "box",
+                                "layout": "vertical",
+                                "backgroundColor": "#ffffff",
+                                "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "Avon 徐雅芳",
+                                        "weight": "bold",
+                                        "size": "xxl",
+                                        "color": "#004c48"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "總監｜DIRECTOR · 垣宣科技",
+                                        "size": "xs",
+                                        "color": "#004c48",
+                                        "margin": "sm",
+                                        "wrap": true
+                                    }
+                                ]
+                            },
+                            "footer": {
+                                "type": "box",
+                                "layout": "vertical",
+                                "spacing": "sm",
+                                "backgroundColor": "#ffffff",
+                                "contents": [
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "📨 信件聯絡｜Email",
+                                            "uri": "mailto:avon.hsu@fateeternal.com"
+                                        }
+                                    },
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "📞 電話聯絡｜Phone",
+                                            "uri": "tel:+886-953-880-797"
+                                        }
+                                    },
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "🔗 垣宣官網｜Website",
+                                            "uri": "https://www.fateeternal.com/"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "bubble",
+                            "hero": {
+                                "type": "image",
+                                "url": "https://i.imgur.com/9VOpTcB.png",
+                                "size": "full",
+                                "aspectRatio": "27:14",
+                                "aspectMode": "cover",
+                                "action": {
+                                    "type": "uri",
+                                    "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link"
+                                }
+                            },
+                            "body": {
+                                "type": "box",
+                                "layout": "vertical",
+                                "backgroundColor": "#ffffff",
+                                "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "分享名片",
+                                        "weight": "bold",
+                                        "size": "xxl",
+                                        "color": "#004c48"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "↑點擊LOGO儲存名片↑",
+                                        "size": "xs",
+                                        "color": "#004c48",
+                                        "margin": "sm",
+                                        "wrap": true
+                                    }
+                                ]
+                            },
+                            "footer": {
+                                "type": "box",
+                                "layout": "vertical",
+                                "spacing": "sm",
+                                "backgroundColor": "#ffffff",
+                                "contents": [
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "✚ 加我好友",
+                                            "uri": "https://line.me/ti/p/PvacePDt4N"
+                                        }
+                                    },
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "🪪 分享名片",
+                                            "uri": "https://lihi.cc/ysEZt"
+                                        }
+                                    },
+                                    {
+                                        "type": "button",
+                                        "style": "primary",
+                                        "height": "sm",
+                                        "color": "#004c48",
+                                        "action": {
+                                            "type": "uri",
+                                            "label": "💬 垣宣官方LINE",
+                                            "uri": "https://line.me/R/ti/p/@272olktr"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
                     ]
-                  }
                 }
             }
         ])
         .then((res) => {
-            if (res) {
-                // 發送成功
-                updateStatus('🟢 名片已成功分享發送！');
-            } else {
-                // 使用者取消分享
-                updateStatus('🟢 分享已取消');
-            }
+            if (res) updateStatus('🟢 名片已成功分享發送！');
+            else updateStatus('🟢 分享已取消');
         })
         .catch((err) => {
-            updateStatus('❌ 發送失敗，請確認 Scopes 權限設定。');
+            updateStatus('❌ 發送失敗，請確認 Scopes 權限與 LINE 開關設定。');
             console.error(err);
         });
     }
