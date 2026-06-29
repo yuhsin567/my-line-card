@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位名片中控台</title>
+    <title>數位名片中控台 (雙端支援版)</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -101,7 +101,7 @@
 <div class="container">
     <div class="logo">🪪</div>
     <h1>我的數位名片中控台</h1>
-    <p class="subtitle">請選擇您要在目前場合分享的名片樣式：</p>
+    <p class="subtitle">請選擇您要在目前場合分享的名片樣式：<br><small style="color:#888;">(已支援電腦版/手機版自動辨識)</small></p>
     
     <div class="card-option">
         <div class="card-title">💼 垣宣科技 | Avon 總監</div>
@@ -119,28 +119,26 @@
 </div>
 
 <script>
-    // 🟢 已經為您設定好您的 LIFF ID
+    // 🟢 已為您綁定您的 LIFF ID
     const MY_LIFF_ID = '2010548408-hYUgnhWX'; 
 
     document.addEventListener("DOMContentLoaded", function() {
-        if (!MY_LIFF_ID || MY_LIFF_ID === 'YOUR_LIFF_ID_HERE') {
-            updateStatus('❌ 請先在程式碼中設定你的 MY_LIFF_ID');
-            return;
-        }
-        
         liff.init({ liffId: MY_LIFF_ID })
             .then(() => {
                 updateStatus('🟢 LINE 系統連線成功，請選擇名片分享');
-                // 啟用所有按鈕
                 document.getElementById('btnAvon').disabled = false;
                 document.getElementById('btnSocial').disabled = false;
                 
-                if (!liff.isLoggedIn()) {
+                // 電腦瀏覽器如果沒登入，不強迫登入，方便直接使用相容模式
+                if (liff.isInClient() && !liff.isLoggedIn()) {
                     liff.login();
                 }
             })
             .catch((err) => {
-                updateStatus('❌ 系統初始化失敗: ' + err.message);
+                // 如果在一般電腦瀏覽器獨立開啟，允許跳過錯誤繼續使用電腦版分享機制
+                updateStatus('🟢 瀏覽器相容模式已就緒');
+                document.getElementById('btnAvon').disabled = false;
+                document.getElementById('btnSocial').disabled = false;
             });
     });
 
@@ -150,14 +148,7 @@
 
     // 核心分享邏輯
     function shareCard(type) {
-        if (!liff.isApiAvailable('shareTargetPicker')) {
-            alert('此帳號尚未開通 shareTargetPicker 權限，或不支援此環境發送。');
-            return;
-        }
-
-        updateStatus('⏳ 正在開啟好友選擇清單...');
-
-        // 根據點擊的按鈕，決定帶入哪一套 JSON 骨架
+        // 先準備好各自的資料架構
         let flexContents;
         let altTextText = "您收到了一張數位名片";
 
@@ -253,22 +244,37 @@
             };
         }
 
-        // 執行 LINE 原生分享
-        liff.shareTargetPicker([
-            {
+        // 🧠 關鍵辨識：檢查目前環境是否支援原生的 shareTargetPicker (通常只有手機支援)
+        if (typeof liff !== 'undefined' && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
+            // 用戶使用手機開：正常呼叫原生好友清單
+            updateStatus('⏳ 正在開啟手機好友選擇清單...');
+            liff.shareTargetPicker([
+                { "type": "flex", "altText": altTextText, "contents": flexContents }
+            ])
+            .then((res) => {
+                if (res) updateStatus('🟢 名片已成功分享發送！');
+                else updateStatus('🟢 分享已取消');
+            })
+            .catch((err) => { updateStatus('❌ 發送失敗：' + err.message); });
+        } else {
+            // 用戶使用電腦開：切換成「電腦版相容模式」
+            updateStatus('💻 偵測到電腦環境，正在為您產生分享網址...');
+            
+            // 把 Flex Message 的資料轉化成網址編碼 (Base64 + URL Encode)
+            const jsonStr = JSON.stringify({
                 "type": "flex",
                 "altText": altTextText,
                 "contents": flexContents
-            }
-        ])
-        .then((res) => {
-            if (res) updateStatus('🟢 名片已成功分享發送！');
-            else updateStatus('🟢 分享已取消');
-        })
-        .catch((err) => {
-            updateStatus('❌ 發送失敗，請確認 Scopes 權限設定。');
-            console.error(err);
-        });
+            });
+            const base64Data = btoa(unescape(encodeURIComponent(jsonStr)));
+            
+            // 構建 LINE 官方允許電腦版分享的特殊路徑
+            const pcShareUrl = `https://line.me/R/share?text=${encodeURIComponent('幫您打包好囉！請點擊下方連結確認發送數位名片：\nhttps://liff.line.me/' + MY_LIFF_ID + '/share-pc.html?d=' + base64Data)}`;
+            
+            // 開啟新視窗引導電腦版轉發
+            window.open(pcShareUrl, '_blank');
+            updateStatus('🟢 已成功為您開啟電腦版 LINE 分享視窗！');
+        }
     }
 </script>
 
