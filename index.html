@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的數位名片系統</title>
+    <!-- 引入 LINE LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            background-color: #06C755;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 10px 0 5px;
+            color: #111;
+        }
+        p {
+            font-size: 14px;
+            color: #666;
+            margin: 0 0 25px;
+        }
+        .btn-send {
+            background-color: #06C755;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+            transition: all 0.2s ease;
+        }
+        .btn-send:hover {
+            background-color: #05b34c;
+            transform: translateY(-1px);
+        }
+        .btn-send:active {
+            transform: translateY(1px);
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="avatar-placeholder">🪪</div>
+    <h1>過失超重 數位名片分享器</h1>
+    <p>點擊下方按鈕，即可選擇 LINE 好友，以你個人名義直接發送精美的 Flex Message 數位名片！</p>
+    
+    <button class="btn-send" id="sendBtn" onclick="shareCard()">傳送數位名片</button>
+    
+    <div class="status" id="statusMsg">系統初始化中...</div>
+</div>
+
+<script>
+    // ⚠️ 請在這裡填入你在 LINE Developers 拿到的 LIFF ID
+    const MY_LIFF_ID = '2010548408-hYUgnhWX'; 
+
+    // 初始化 LIFF
+    document.addEventListener("DOMContentLoaded", function() {
+        if (!MY_LIFF_ID || MY_LIFF_ID === 'YOUR_LIFF_ID_HERE') {
+            updateStatus('❌ 請先在程式碼中設定你的 MY_LIFF_ID');
+            document.getElementById('sendBtn').disabled = true;
+            return;
+        }
+        
+        liff.init({ liffId: MY_LIFF_ID })
+            .then(() => {
+                updateStatus('🟢 LINE 系統連線成功，隨時可以分享');
+                // 如果沒登入，引導使用者登入
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            })
+            .catch((err) => {
+                updateStatus('❌ 系統初始化失敗: ' + err.message);
+                console.error(err);
+            });
+    });
+
+    function updateStatus(msg) {
+        document.getElementById('statusMsg').innerText = msg;
+    }
+
+    // 觸發分享功能
+    function shareCard() {
+        // 檢查 shareTargetPicker 是否可用
+        if (!liff.isApiAvailable('shareTargetPicker')) {
+            alert('此帳號尚未開通 shareTargetPicker 權限，或不支援此環境發送。');
+            return;
+        }
+
+        updateStatus('⏳ 正在開啟好友選擇清單...');
+
+        liff.shareTargetPicker([
+            {
+                "type": "flex",
+                "altText": "您收到了一張數位名片",
+                "contents": {
+                  "type": "bubble",
+                  "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "過失超重",
+                        "weight": "bold",
+                        "color": "#1DB446",
+                        "size": "sm"
+                      },
+                      {
+                        "type": "text",
+                        "text": "您的名字 / 職稱",
+                        "weight": "bold",
+                        "size": "xxl",
+                        "margin": "md"
+                      },
+                      {
+                        "type": "text",
+                        "text": "過失超重的日常 工作室",
+                        "size": "xs",
+                        "color": "#aaaaaa",
+                        "wrap": true
+                      },
+                      {
+                        "type": "separator",
+                        "margin": "xxl"
+                      },
+                      {
+                        "type": "box",
+                        "layout": "vertical",
+                        "margin": "xxl",
+                        "spacing": "sm",
+                        "contents": [
+                          {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                              {
+                                "type": "text",
+                                "text": "PHONE",
+                                "size": "xs",
+                                "color": "#aaaaaa",
+                                "flex": 3
+                              },
+                              {
+                                "type": "text",
+                                "text": "0912-345-678",
+                                "size": "xs",
+                                "color": "#666666",
+                                "flex": 9,
+                                "wrap": true
+                              }
+                            ]
+                          },
+                          {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                              {
+                                "type": "text",
+                                "text": "EMAIL",
+                                "size": "xs",
+                                "color": "#aaaaaa",
+                                "flex": 3
+                              },
+                              {
+                                "type": "text",
+                                "text": "hello@example.com",
+                                "size": "xs",
+                                "color": "#666666",
+                                "flex": 9,
+                                "wrap": true
+                              }
+                            ]
+                          },
+                          {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                              {
+                                "type": "text",
+                                "text": "LINE",
+                                "size": "xs",
+                                "color": "#aaaaaa",
+                                "flex": 3
+                              },
+                              {
+                                "type": "text",
+                                "text": "@your_line_id",
+                                "size": "xs",
+                                "color": "#666666",
+                                "flex": 9,
+                                "wrap": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "separator",
+                        "margin": "xxl"
+                      },
+                      {
+                        "type": "box",
+                        "layout": "horizontal",
+                        "margin": "md",
+                        "contents": [
+                          {
+                            "type": "button",
+                            "action": {
+                              "type": "uri",
+                              "label": "加入個人 LINE",
+                              "uri": "https://line.me/ti/p/你的個人LINE官方連結"
+                            },
+                            "style": "primary",
+                            "color": "#06C755",
+                            "height": "sm"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+            }
+        ])
+        .then((res) => {
+            if (res) {
+                // 發送成功
+                updateStatus('🟢 名片已成功分享發送！');
+            } else {
+                // 使用者取消分享
+                updateStatus('🟢 分享已取消');
+            }
+        })
+        .catch((err) => {
+            updateStatus('❌ 發送失敗，請確認 Scopes 權限設定。');
+            console.error(err);
+        });
+    }
+</script>
+
+</body>
+</html>
