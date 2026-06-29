@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位名片中控台 (雙端支援版)</title>
+    <title>數位名片中控台 (雙端優化版)</title>
+    <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -80,7 +81,6 @@
             align-items: center;
             gap: 6px;
         }
-        /* 按鈕顏色區分 */
         .btn-avon { background-color: #004c48; box-shadow: 0 4px 10px rgba(0, 76, 72, 0.2); }
         .btn-avon:hover { background-color: #003633; }
         
@@ -93,6 +93,18 @@
             color: #999;
             border-top: 1px solid #eee;
             padding-top: 10px;
+            line-height: 1.5;
+        }
+        .pc-notice {
+            background: #fff9db;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+            text-align: left;
         }
     </style>
 </head>
@@ -101,54 +113,76 @@
 <div class="container">
     <div class="logo">🪪</div>
     <h1>我的數位名片中控台</h1>
-    <p class="subtitle">請選擇您要在目前場合分享的名片樣式：<br><small style="color:#888;">(已支援電腦版/手機版自動辨識)</small></p>
+    <p class="subtitle">請選擇您要在目前場合分享的名片樣式：</p>
     
+    <!-- 名片選項 1：垣宣科技 Avon -->
     <div class="card-option">
         <div class="card-title">💼 垣宣科技 | Avon 總監</div>
         <div class="card-desc">官方商務名片，雙頁 Carousel 格式，含官網、Email、電話與官方 LINE 連結。</div>
         <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard('avon')" disabled>傳送商務名片</button>
     </div>
     
+    <!-- 名片選項 2：過失超重 個人名片 -->
     <div class="card-option">
         <div class="card-title">☕ 過失超重 | 個人社交名片</div>
         <div class="card-desc">輕鬆的私人日常名片，單頁 Bubble 格式，方便交換個人 LINE 帳號。</div>
         <button class="btn-send btn-social" id="btnSocial" onclick="shareCard('social')" disabled>傳送社交名片</button>
+    </div>
+
+    <!-- 電腦版專用提示區 -->
+    <div class="pc-notice" id="pcNotice">
+        💡 <b>電腦版提示：</b><br>
+        名片 JSON 代碼已成功複製到您的剪貼簿！<br>
+        請點擊前往 <a href="https://lihi.cc/ysEZt" target="_blank" style="color:#004c48; font-weight:bold; text-decoration:underline;">Flex 訊息發送器</a>，將代碼貼上即可從電腦轉發給任何好友！
     </div>
     
     <div class="status" id="statusMsg">系統初始化中...</div>
 </div>
 
 <script>
-    // 🟢 已為您綁定您的 LIFF ID
     const MY_LIFF_ID = '2010548408-hYUgnhWX'; 
+    let isMobileEnv = false;
 
     document.addEventListener("DOMContentLoaded", function() {
         liff.init({ liffId: MY_LIFF_ID })
             .then(() => {
-                updateStatus('🟢 LINE 系統連線成功，請選擇名片分享');
-                document.getElementById('btnAvon').disabled = false;
-                document.getElementById('btnSocial').disabled = false;
-                
-                // 電腦瀏覽器如果沒登入，不強迫登入，方便直接使用相容模式
+                // 檢查是否支援原生的 shareTargetPicker (判斷是否為手機 LINE 環境)
+                if (liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
+                    isMobileEnv = true;
+                    updateStatus('🟢 LINE 手機版連線成功，按鈕可直接分享！');
+                } else {
+                    isMobileEnv = false;
+                    updateStatus('💻 偵測到電腦環境，已切換為「一鍵複製代碼」模式。');
+                }
+                enableButtons();
                 if (liff.isInClient() && !liff.isLoggedIn()) {
                     liff.login();
                 }
             })
             .catch((err) => {
-                // 如果在一般電腦瀏覽器獨立開啟，允許跳過錯誤繼續使用電腦版分享機制
-                updateStatus('🟢 瀏覽器相容模式已就緒');
-                document.getElementById('btnAvon').disabled = false;
-                document.getElementById('btnSocial').disabled = false;
+                // 一般電腦瀏覽器開啟
+                isMobileEnv = false;
+                updateStatus('💻 電腦瀏覽器相容模式已就緒。');
+                enableButtons();
             });
     });
 
-    function updateStatus(msg) {
-        document.getElementById('statusMsg').innerText = msg;
+    function enableButtons() {
+        document.getElementById('btnAvon').disabled = false;
+        document.getElementById('btnSocial').disabled = false;
+        
+        // 如果是電腦版，把按鈕文字改得更直覺
+        if (!isMobileEnv) {
+            document.getElementById('btnAvon').innerText = '📋 複製商務名片代碼';
+            document.getElementById('btnSocial').innerText = '📋 複製社交名片代碼';
+        }
     }
 
-    // 核心分享邏輯
+    function updateStatus(msg) {
+        document.getElementById('statusMsg').innerHTML = msg;
+    }
+
     function shareCard(type) {
-        // 先準備好各自的資料架構
         let flexContents;
         let altTextText = "您收到了一張數位名片";
 
@@ -244,9 +278,8 @@
             };
         }
 
-        // 🧠 關鍵辨識：檢查目前環境是否支援原生的 shareTargetPicker (通常只有手機支援)
-        if (typeof liff !== 'undefined' && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
-            // 用戶使用手機開：正常呼叫原生好友清單
+        // 📱 手機環境：正常呼叫好友選單
+        if (isMobileEnv) {
             updateStatus('⏳ 正在開啟手機好友選擇清單...');
             liff.shareTargetPicker([
                 { "type": "flex", "altText": altTextText, "contents": flexContents }
@@ -256,24 +289,22 @@
                 else updateStatus('🟢 分享已取消');
             })
             .catch((err) => { updateStatus('❌ 發送失敗：' + err.message); });
-        } else {
-            // 用戶使用電腦開：切換成「電腦版相容模式」
-            updateStatus('💻 偵測到電腦環境，正在為您產生分享網址...');
-            
-            // 把 Flex Message 的資料轉化成網址編碼 (Base64 + URL Encode)
-            const jsonStr = JSON.stringify({
+        } 
+        // 💻 電腦環境：一鍵複製格式化後的完美 JSON
+        else {
+            const finalJSON = JSON.stringify({
                 "type": "flex",
                 "altText": altTextText,
                 "contents": flexContents
+            }, null, 2);
+
+            // 複製到剪貼簿
+            navigator.clipboard.writeText(finalJSON).then(() => {
+                document.getElementById('pcNotice').style.display = 'block';
+                updateStatus('📋 <b>代碼複製成功！</b> 請看下方黃色提示框的操作指引。');
+            }).catch((err) => {
+                alert('複製失敗，請手動複製控制台資料。');
             });
-            const base64Data = btoa(unescape(encodeURIComponent(jsonStr)));
-            
-            // 構建 LINE 官方允許電腦版分享的特殊路徑
-            const pcShareUrl = `https://line.me/R/share?text=${encodeURIComponent('幫您打包好囉！請點擊下方連結確認發送數位名片：\nhttps://liff.line.me/' + MY_LIFF_ID + '/share-pc.html?d=' + base64Data)}`;
-            
-            // 開啟新視窗引導電腦版轉發
-            window.open(pcShareUrl, '_blank');
-            updateStatus('🟢 已成功為您開啟電腦版 LINE 分享視窗！');
         }
     }
 </script>
