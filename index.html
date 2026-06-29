@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的數位名片系統</title>
-    <!-- 引入 LINE LIFF SDK -->
+    <title>數位名片中控台</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -28,79 +27,114 @@
             text-align: center;
             box-sizing: border-box;
         }
-        .avatar-placeholder {
-            width: 80px;
-            height: 80px;
-            background-color: #004c48;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            margin: 0 auto 15px;
+        .logo {
+            font-size: 40px;
+            margin-bottom: 10px;
         }
         h1 {
-            font-size: 20px;
+            font-size: 22px;
             margin: 10px 0 5px;
             color: #111;
         }
-        p {
+        .subtitle {
             font-size: 14px;
             color: #666;
             margin: 0 0 25px;
         }
-        .btn-send {
-            background-color: #004c48;
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 12px rgba(0, 76, 72, 0.3);
+        .card-option {
+            background: #ffffff;
+            border: 2px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
             transition: all 0.2s ease;
         }
-        .btn-send:hover {
-            background-color: #003633;
-            transform: translateY(-1px);
+        .card-option:hover {
+            border-color: #004c48;
+            background-color: #fafdfd;
         }
+        .card-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #111;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .btn-send {
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        /* 按鈕顏色區分 */
+        .btn-avon { background-color: #004c48; box-shadow: 0 4px 10px rgba(0, 76, 72, 0.2); }
+        .btn-avon:hover { background-color: #003633; }
+        
+        .btn-social { background-color: #1DB446; box-shadow: 0 4px 10px rgba(29, 180, 70, 0.2); }
+        .btn-social:hover { background-color: #169a3a; }
+
         .status {
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 12px;
             color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="avatar-placeholder">🪪</div>
-    <h1>垣宣科技 數位名片分享器</h1>
-    <p>點擊下方按鈕選擇好友，即可將「Avon 的雙頁數位名片」以你個人帳號名義直接傳送出去！</p>
+    <div class="logo">🪪</div>
+    <h1>我的數位名片中控台</h1>
+    <p class="subtitle">請選擇您要在目前場合分享的名片樣式：</p>
     
-    <button class="btn-send" id="sendBtn" onclick="shareCard()">傳送數位名片</button>
+    <div class="card-option">
+        <div class="card-title">💼 垣宣科技 | Avon 總監</div>
+        <div class="card-desc">官方商務名片，雙頁 Carousel 格式，含官網、Email、電話與官方 LINE 連結。</div>
+        <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard('avon')" disabled>傳送商務名片</button>
+    </div>
+    
+    <div class="card-option">
+        <div class="card-title">☕ 過失超重 | 個人社交名片</div>
+        <div class="card-desc">輕鬆的私人日常名片，單頁 Bubble 格式，方便交換個人 LINE 帳號。</div>
+        <button class="btn-send btn-social" id="btnSocial" onclick="shareCard('social')" disabled>傳送社交名片</button>
+    </div>
     
     <div class="status" id="statusMsg">系統初始化中...</div>
 </div>
 
 <script>
-    // ⚠️ 請記得在這裡貼上你在 LINE Developers 拿到的 LIFF ID
+    // 🟢 已經為您設定好您的 LIFF ID
     const MY_LIFF_ID = '2010548408-hYUgnhWX'; 
 
     document.addEventListener("DOMContentLoaded", function() {
         if (!MY_LIFF_ID || MY_LIFF_ID === 'YOUR_LIFF_ID_HERE') {
             updateStatus('❌ 請先在程式碼中設定你的 MY_LIFF_ID');
-            document.getElementById('sendBtn').disabled = true;
             return;
         }
         
         liff.init({ liffId: MY_LIFF_ID })
             .then(() => {
-                updateStatus('🟢 LINE 系統連線成功，隨時可以分享');
+                updateStatus('🟢 LINE 系統連線成功，請選擇名片分享');
+                // 啟用所有按鈕
+                document.getElementById('btnAvon').disabled = false;
+                document.getElementById('btnSocial').disabled = false;
+                
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 }
@@ -114,7 +148,8 @@
         document.getElementById('statusMsg').innerText = msg;
     }
 
-    function shareCard() {
+    // 核心分享邏輯
+    function shareCard(type) {
         if (!liff.isApiAvailable('shareTargetPicker')) {
             alert('此帳號尚未開通 shareTargetPicker 權限，或不支援此環境發送。');
             return;
@@ -122,169 +157,108 @@
 
         updateStatus('⏳ 正在開啟好友選擇清單...');
 
+        // 根據點擊的按鈕，決定帶入哪一套 JSON 骨架
+        let flexContents;
+        let altTextText = "您收到了一張數位名片";
+
+        if (type === 'avon') {
+            altTextText = "垣宣科技|Avon的數位名片";
+            flexContents = {
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/9VOpTcB.png",
+                            "size": "full",
+                            "aspectRatio": "27:14",
+                            "aspectMode": "cover",
+                            "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "text", "text": "Avon 徐雅芳", "weight": "bold", "size": "xxl", "color": "#004c48" },
+                                { "type": "text", "text": "總監｜DIRECTOR · 垣宣科技", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📨 信件聯絡｜Email", "uri": "mailto:avon.hsu@fateeternal.com" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📞 電話聯絡｜Phone", "uri": "tel:+886-953-880-797" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🔗 垣宣官網｜Website", "uri": "https://www.fateeternal.com/" } }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/9VOpTcB.png",
+                            "size": "full",
+                            "aspectRatio": "27:14",
+                            "aspectMode": "cover",
+                            "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "text", "text": "分享名片", "weight": "bold", "size": "xxl", "color": "#004c48" },
+                                { "type": "text", "text": "↑點擊LOGO儲存名片↑", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "✚ 加我好友", "uri": "https://line.me/ti/p/PvacePDt4N" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🪪 分享名片", "uri": "https://lihi.cc/ysEZt" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "💬 垣宣官方LINE", "uri": "https://line.me/R/ti/p/@272olktr" } }
+                            ]
+                        }
+                    }
+                ]
+            };
+        } else if (type === 'social') {
+            altTextText = "過失超重的日常|個人名片";
+            flexContents = {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        { "type": "text", "text": "過失超重", "weight": "bold", "color": "#1DB446", "size": "sm" },
+                        { "type": "text", "text": "過失超重", "weight": "bold", "size": "xl", "margin": "md" },
+                        { "type": "text", "text": "這是我的個人社交名片，很高興認識你！", "size": "xs", "color": "#aaaaaa", "wrap": true, "margin": "sm" }
+                    ]
+                },
+                "footer": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        { "type": "button", "style": "primary", "color": "#1DB446", "action": { "type": "uri", "label": "✚ 加我個人 LINE", "uri": "https://line.me/ti/p/PvacePDt4N" } }
+                    ]
+                }
+            };
+        }
+
+        // 執行 LINE 原生分享
         liff.shareTargetPicker([
             {
                 "type": "flex",
-                "altText": "垣宣科技|Avon的數位名片",
-                "contents": {
-                    "type": "carousel",
-                    "contents": [
-                        {
-                            "type": "bubble",
-                            "hero": {
-                                "type": "image",
-                                "url": "https://i.imgur.com/9VOpTcB.png",
-                                "size": "full",
-                                "aspectRatio": "27:14",
-                                "aspectMode": "cover",
-                                "action": {
-                                    "type": "uri",
-                                    "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link"
-                                }
-                            },
-                            "body": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    {
-                                        "type": "text",
-                                        "text": "Avon 徐雅芳",
-                                        "weight": "bold",
-                                        "size": "xxl",
-                                        "color": "#004c48"
-                                    },
-                                    {
-                                        "type": "text",
-                                        "text": "總監｜DIRECTOR · 垣宣科技",
-                                        "size": "xs",
-                                        "color": "#004c48",
-                                        "margin": "sm",
-                                        "wrap": true
-                                    }
-                                ]
-                            },
-                            "footer": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "spacing": "sm",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "📨 信件聯絡｜Email",
-                                            "uri": "mailto:avon.hsu@fateeternal.com"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "📞 電話聯絡｜Phone",
-                                            "uri": "tel:+886-953-880-797"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "🔗 垣宣官網｜Website",
-                                            "uri": "https://www.fateeternal.com/"
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "type": "bubble",
-                            "hero": {
-                                "type": "image",
-                                "url": "https://i.imgur.com/9VOpTcB.png",
-                                "size": "full",
-                                "aspectRatio": "27:14",
-                                "aspectMode": "cover",
-                                "action": {
-                                    "type": "uri",
-                                    "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link"
-                                }
-                            },
-                            "body": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    {
-                                        "type": "text",
-                                        "text": "分享名片",
-                                        "weight": "bold",
-                                        "size": "xxl",
-                                        "color": "#004c48"
-                                    },
-                                    {
-                                        "type": "text",
-                                        "text": "↑點擊LOGO儲存名片↑",
-                                        "size": "xs",
-                                        "color": "#004c48",
-                                        "margin": "sm",
-                                        "wrap": true
-                                    }
-                                ]
-                            },
-                            "footer": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "spacing": "sm",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "✚ 加我好友",
-                                            "uri": "https://line.me/ti/p/PvacePDt4N"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "🪪 分享名片",
-                                            "uri": "https://lihi.cc/ysEZt"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "style": "primary",
-                                        "height": "sm",
-                                        "color": "#004c48",
-                                        "action": {
-                                            "type": "uri",
-                                            "label": "💬 垣宣官方LINE",
-                                            "uri": "https://line.me/R/ti/p/@272olktr"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
+                "altText": altTextText,
+                "contents": flexContents
             }
         ])
         .then((res) => {
@@ -292,7 +266,7 @@
             else updateStatus('🟢 分享已取消');
         })
         .catch((err) => {
-            updateStatus('❌ 發送失敗，請確認 Scopes 權限與 LINE 開關設定。');
+            updateStatus('❌ 發送失敗，請確認 Scopes 權限設定。');
             console.error(err);
         });
     }
