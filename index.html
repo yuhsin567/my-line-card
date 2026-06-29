@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位名片中控台 (跨端終極穩定版)</title>
+    <title>數位名片中控台</title>
     <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
@@ -83,9 +83,6 @@
         }
         .btn-avon { background-color: #004c48; box-shadow: 0 4px 10px rgba(0, 76, 72, 0.2); }
         .btn-avon:hover { background-color: #003633; }
-        
-        .btn-social { background-color: #1DB446; box-shadow: 0 4px 10px rgba(29, 180, 70, 0.2); }
-        .btn-social:hover { background-color: #169a3a; }
 
         .status {
             margin-top: 20px;
@@ -95,7 +92,7 @@
             padding-top: 10px;
         }
         
-        /* 彈出提示視窗樣式 */
+        /* 頂部彈出提示 */
         .toast {
             display: none;
             position: fixed;
@@ -125,20 +122,13 @@
 <div class="container">
     <div class="logo">🪪</div>
     <h1>我的數位名片中控台</h1>
-    <p class="subtitle">請選擇您要分享的名片樣式：</p>
+    <p class="subtitle">請點擊下方按鈕分享您的專屬名片：</p>
     
-    <!-- 名片選項 1：垣宣科技 Avon -->
+    <!-- 名片選項：垣宣科技 Avon -->
     <div class="card-option">
         <div class="card-title">💼 垣宣科技 | Avon 總監</div>
-        <div class="card-desc">官方商務名片 (手機端直接傳送雙頁卡片，電腦端一鍵複製分享連結)。</div>
-        <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard('avon')" disabled>🚀 一鍵分享商務名片</button>
-    </div>
-    
-    <!-- 名片選項 2：過失超重 個人名片 -->
-    <div class="card-option">
-        <div class="card-title">☕ 過失超重 | 個人社交名片</div>
-        <div class="card-desc">輕鬆的私人日常名片，單頁格式，全平台穩定支援分享。</div>
-        <button class="btn-send btn-social" id="btnSocial" onclick="shareCard('social')" disabled>🚀 一鍵分享社交名片</button>
+        <div class="card-desc">官方商務名片 (手機端自動傳送雙頁卡片，電腦端一鍵複製分享連結)。</div>
+        <button class="btn-send btn-avon" id="btnAvon" onclick="shareCard()" disabled>🚀 一鍵分享商務名片</button>
     </div>
     
     <div class="status" id="statusMsg">系統初始化中...</div>
@@ -159,7 +149,7 @@
                     updateStatus('🟢 LINE 電腦相容模式已就緒');
                     changeButtonTextForPC();
                 }
-                enableButtons();
+                document.getElementById('btnAvon').disabled = false;
                 if (liff.isInClient() && !liff.isLoggedIn()) {
                     liff.login();
                 }
@@ -168,18 +158,12 @@
                 isMobileEnv = false;
                 updateStatus('🟢 瀏覽器相容模式已就緒');
                 changeButtonTextForPC();
-                enableButtons();
+                document.getElementById('btnAvon').disabled = false;
             });
     });
 
-    function enableButtons() {
-        document.getElementById('btnAvon').disabled = false;
-        document.getElementById('btnSocial').disabled = false;
-    }
-
     function changeButtonTextForPC() {
         document.getElementById('btnAvon').innerText = '📋 一鍵複製商務名片網址';
-        document.getElementById('btnSocial').innerText = '📋 一鍵複製社交名片網址';
     }
 
     function updateStatus(msg) {
@@ -194,105 +178,79 @@
         }, 3000);
     }
 
-    function shareCard(type) {
+    function shareCard() {
         // 📱 手機環境：完美呼叫 LINE 原生好友選擇器發送 Flex 大卡片
         if (isMobileEnv) {
             updateStatus('⏳ 正在開啟手機好友選擇清單...');
             
-            let flexContents;
-            let altTextText = "您收到了一張數位名片";
-
-            if (type === 'avon') {
-                altTextText = "垣宣科技|Avon的數位名片";
-                flexContents = {
-                    "type": "carousel",
-                    "contents": [
-                        {
-                            "type": "bubble",
-                            "hero": {
-                                "type": "image",
-                                "url": "https://i.imgur.com/9VOpTcB.png",
-                                "size": "full",
-                                "aspectRatio": "27:14",
-                                "aspectMode": "cover",
-                                "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
-                            },
-                            "body": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    { "type": "text", "text": "Avon 徐雅芳", "weight": "bold", "size": "xxl", "color": "#004c48" },
-                                    { "type": "text", "text": "總監｜DIRECTOR · 垣宣科技", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
-                                ]
-                            },
-                            "footer": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "spacing": "sm",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📨 信件聯絡｜Email", "uri": "mailto:avon.hsu@fateeternal.com" } },
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📞 電話聯絡｜Phone", "uri": "tel:+886-953-880-797" } },
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🔗 垣宣官網｜Website", "uri": "https://www.fateeternal.com/" } }
-                                ]
-                            }
+            const altTextText = "垣宣科技|Avon的數位名片";
+            const flexContents = {
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/9VOpTcB.png",
+                            "size": "full",
+                            "aspectRatio": "27:14",
+                            "aspectMode": "cover",
+                            "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
                         },
-                        {
-                            "type": "bubble",
-                            "hero": {
-                                "type": "image",
-                                "url": "https://i.imgur.com/9VOpTcB.png",
-                                "size": "full",
-                                "aspectRatio": "27:14",
-                                "aspectMode": "cover",
-                                "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
-                            },
-                            "body": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    { "type": "text", "text": "分享名片", "weight": "bold", "size": "xxl", "color": "#004c48" },
-                                    { "type": "text", "text": "↑點擊LOGO儲存名片↑", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
-                                ]
-                            },
-                            "footer": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "spacing": "sm",
-                                "backgroundColor": "#ffffff",
-                                "contents": [
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "✚ 加我好友", "uri": "https://line.me/ti/p/PvacePDt4N" } },
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🪪 分享名片", "uri": "https://lihi.cc/ysEZt" } },
-                                    { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "💬 垣宣官方LINE", "uri": "https://line.me/R/ti/p/@272olktr" } }
-                                ]
-                            }
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "text", "text": "Avon 徐雅芳", "weight": "bold", "size": "xxl", "color": "#004c48" },
+                                { "type": "text", "text": "總監｜DIRECTOR · 垣宣科技", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📨 信件聯絡｜Email", "uri": "mailto:avon.hsu@fateeternal.com" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "📞 電話聯絡｜Phone", "uri": "tel:+886-953-880-797" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🔗 垣宣官網｜Website", "uri": "https://www.fateeternal.com/" } }
+                            ]
                         }
-                    ]
-                };
-            } else if (type === 'social') {
-                altTextText = "過失超重的日常|個人名片";
-                flexContents = {
-                    "type": "bubble",
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            { "type": "text", "text": "過失超重", "weight": "bold", "color": "#1DB446", "size": "sm" },
-                            { "type": "text", "text": "過失超重", "weight": "bold", "size": "xl", "margin": "md" },
-                            { "type": "text", "text": "這是我的個人社交名片，很高興認識你！", "size": "xs", "color": "#aaaaaa", "wrap": true, "margin": "sm" }
-                        ]
                     },
-                    "footer": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            { "type": "button", "style": "primary", "color": "#1DB446", "action": { "type": "uri", "label": "✚ 加我個人 LINE", "uri": "https://line.me/ti/p/PvacePDt4N" } }
-                        ]
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/9VOpTcB.png",
+                            "size": "full",
+                            "aspectRatio": "27:14",
+                            "aspectMode": "cover",
+                            "action": { "type": "uri", "uri": "https://drive.google.com/file/d/1enDO9w3OJIIM1AZbWL7uWpCpVAa875Vn/view?usp=drive_link" }
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "text", "text": "分享名片", "weight": "bold", "size": "xxl", "color": "#004c48" },
+                                { "type": "text", "text": "↑點擊LOGO儲存名片↑", "size": "xs", "color": "#004c48", "margin": "sm", "wrap": true }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "backgroundColor": "#ffffff",
+                            "contents": [
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "✚ 加我好友", "uri": "https://line.me/ti/p/PvacePDt4N" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "🪪 分享名片", "uri": "https://lihi.cc/ysEZt" } },
+                                { "type": "button", "style": "primary", "height": "sm", "color": "#004c48", "action": { "type": "uri", "label": "💬 垣宣官方LINE", "uri": "https://line.me/R/ti/p/@272olktr" } }
+                            ]
+                        }
                     }
-                };
-            }
+                ]
+            };
 
             liff.shareTargetPicker([
                 { "type": "flex", "altText": altTextText, "contents": flexContents }
@@ -303,10 +261,9 @@
             })
             .catch((err) => { updateStatus('❌ 發送失敗：' + err.message); });
         } 
-        // 💻 電腦環境：放棄不穩定的跳轉，直接一鍵複製網址到剪貼簿，保證百分之百穩定！
+        // 💻 電腦環境：一鍵複製網址到剪貼簿，保證百分之百穩定
         else {
-            const name = (type === 'avon') ? 'Avon 徐雅芳總監' : '過失超重';
-            const shareText = `您好！這是我的數位名片（${name}），請多指教：\nhttps://liff.line.me/${MY_LIFF_ID}`;
+            const shareText = `您好！這是我的數位名片（Avon 徐雅芳總監），請多指教：\nhttps://liff.line.me/${MY_LIFF_ID}`;
             
             navigator.clipboard.writeText(shareText).then(() => {
                 showToast();
